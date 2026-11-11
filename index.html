@@ -1,0 +1,349 @@
+<!-- ... existing code ... -->
+  <!-- Custom Studio Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    :root { --bg-obsidian: #08080A; --bg-surface: #111115; }
+    body { background-color: var(--bg-obsidian); color: #F5F5F7; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+    .noise-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 50; opacity: 0.025; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"); }
+    .studio-grid { background-size: 64px 64px; background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px); }
+    .text-gradient-brand { background: linear-gradient(135deg, #F59E0B 0%, #FF5E3A 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .bento-card { position: relative; background: #111115; border: 1px solid rgba(255,255,255,0.08); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease; overflow: hidden; }
+    .bento-card::before { content: ""; position: absolute; inset: 0; background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(245,158,11,0.09), transparent 45%); opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
+    .bento-card:hover { border-color: rgba(245,158,11,0.32); transform: translateY(-3px); }
+    .bento-card:hover::before { opacity: 1; }
+    @keyframes marqueeScroll { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
+    .marquee-track { display: flex; width: max-content; animation: marqueeScroll 32s linear infinite; }
+    .marquee-wrapper:hover .marquee-track { animation-play-state: paused; }
+    .reveal-up { opacity: 0; transform: translateY(28px); transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .reveal-up.is-visible { opacity: 1; transform: translateY(0); }
+    @keyframes pulseRing { 0% { transform: scale(0.85); opacity: 0.8; } 70% { transform: scale(1.8); opacity: 0; } 100% { transform: scale(1.8); opacity: 0; } }
+    .live-dot::after { content: ''; position: absolute; inset: 0; border-radius: 9999px; background-color: #F59E0B; animation: pulseRing 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite; }
+    .service-pill.active { background: linear-gradient(135deg, rgba(245,158,11,0.18), rgba(255,94,58,0.18)); border-color: #F59E0B; color: #F5F5F7; }
+    .modal-backdrop { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+    .modal-panel { transform: scale(0.96) translateY(12px); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+    .modal-backdrop.open .modal-panel { transform: scale(1) translateY(0); }
+    #scrollProgressBar { transform-origin: 0% 50%; transform: scaleX(0); background: linear-gradient(90deg, #F59E0B 0%, #FF5E3A 65%, #F59E0B 100%); box-shadow: 0 0 12px rgba(245,158,11,0.55); }
+    #navbar { transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease; }
+    #navbar.is-scrolled { background-color: rgba(8,8,10,0.88); border-bottom-color: rgba(245,158,11,0.22); box-shadow: 0 16px 40px -12px rgba(0,0,0,0.75); }
+    #navbarInner { height: 5.5rem; transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    #navbar.is-scrolled #navbarInner { height: 4.25rem; }
+    #navPillIndicator { position: absolute; top: 4px; bottom: 4px; left: 0; border-radius: 9999px; background: linear-gradient(135deg, rgba(245,158,11,0.16), rgba(255,94,58,0.14)); border: 1px solid rgba(245,158,11,0.35); transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), width 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease; pointer-events: none; opacity: 0; }
+    .magnetic-el { display: inline-flex; transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
+    .hamburger-line { transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease; transform-origin: center; }
+    #mobileMenuBtn.is-open .line-top { transform: translateY(5px) rotate(45deg); }
+    #mobileMenuBtn.is-open .line-mid { opacity: 0; transform: scaleX(0); }
+    #mobileMenuBtn.is-open .line-bot { transform: translateY(-5px) rotate(-45deg); }
+    #mobileDrawer { opacity: 0; visibility: hidden; clip-path: inset(0 0 100% 0); transition: clip-path 0.55s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease, visibility 0.55s; }
+    #mobileDrawer.is-open { opacity: 1; visibility: visible; clip-path: inset(0 0 0% 0); }
+    .drawer-item { opacity: 0; transform: translateY(22px); transition: opacity 0.45s ease, transform 0.45s ease; }
+    #mobileDrawer.is-open .drawer-item { opacity: 1; transform: translateY(0); }
+    #backToTopBtn { opacity: 0; transform: translateY(18px) scale(0.9); pointer-events: none; transition: opacity 0.35s ease, transform 0.35s ease; }
+    #backToTopBtn.visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+    @media (hover: hover) and (pointer: fine) { body.has-custom-cursor, body.has-custom-cursor a, body.has-custom-cursor button, body.has-custom-cursor [role="button"], body.has-custom-cursor .cursor-pointer { cursor: none !important; } body.has-custom-cursor input, body.has-custom-cursor textarea { cursor: text !important; } }
+    #camCursorDot, #camCursorFrame { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; opacity: 0; will-change: transform, opacity; transition: opacity 0.25s ease; }
+    #camCursorDot { width: 6px; height: 6px; margin-left: -3px; margin-top: -3px; border-radius: 9999px; background: #F59E0B; box-shadow: 0 0 10px rgba(245,158,11,0.9); }
+    #camCursorFrame { width: 38px; height: 38px; margin-left: -19px; margin-top: -19px; display: flex; align-items: center; justify-content: center; transition: width 0.28s ease, height 0.28s ease, margin 0.28s ease, opacity 0.25s ease; }
+    .vf-bracket { position: absolute; width: 9px; height: 9px; border-color: rgba(245,245,247,0.78); border-style: solid; transition: border-color 0.25s ease; }
+    .vf-tl { top: 0; left: 0; border-width: 1.5px 0 0 1.5px; } .vf-tr { top: 0; right: 0; border-width: 1.5px 1.5px 0 0; } .vf-bl { bottom: 0; left: 0; border-width: 0 0 1.5px 1.5px; } .vf-br { bottom: 0; right: 0; border-width: 0 1.5px 1.5px 0; }
+    #camCursorFrame.is-hovering { width: 56px; height: 56px; margin-left: -28px; margin-top: -28px; background: radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 72%); border-radius: 12px; }
+    #camCursorFrame.is-hovering .vf-bracket { border-color: #F59E0B; }
+    #camCursorFrame.has-label { width: 78px; height: 34px; margin-left: -39px; margin-top: -17px; background: rgba(17,17,21,0.85); backdrop-filter: blur(8px); border-radius: 8px; }
+    #camCursorFrame.has-label .vf-bracket { border-color: #FF5E3A; width: 7px; height: 7px; }
+    #camCursorLabel { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.14em; color: #F5F5F7; text-transform: uppercase; opacity: 0; transform: scale(0.85); transition: opacity 0.2s ease, transform 0.2s ease; }
+    #camCursorFrame.has-label #camCursorLabel { opacity: 1; transform: scale(1); }
+    #camCursorFrame.is-clicking { transform: scale(0.82) !important; }
+    #camCursorFrame.is-clicking .vf-bracket { border-color: #FF5E3A; }
+    @keyframes touchAutofocus { 0% { opacity: 1; transform: translate3d(var(--tx), var(--ty), 0) scale(1.38); } 45% { opacity: 1; transform: translate3d(var(--tx), var(--ty), 0) scale(0.96); } 75% { opacity: 0.95; transform: translate3d(var(--tx), var(--ty), 0) scale(1); } 100% { opacity: 0; transform: translate3d(var(--tx), var(--ty), 0) scale(0.92); } }
+    #camCursorFrame.touch-focus { width: 52px; height: 52px; margin-left: -26px; margin-top: -26px; animation: touchAutofocus 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    #camCursorFrame.touch-focus .vf-bracket { border-color: #F59E0B; width: 11px; height: 11px; }
+  </style>
+</head>
+<!-- ... existing code ... -->
+  <!-- Interactive Studio JavaScript (External + Standalone Fallback) -->
+  <script src="js/script.js"></script>
+  <script>
+    if (!window.__mvInitialized) {
+      window.__mvInitialized = true;
+
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileDrawer = document.getElementById('mobileDrawer');
+      const navbar = document.getElementById('navbar');
+      const scrollProgressBar = document.getElementById('scrollProgressBar');
+      const backToTopBtn = document.getElementById('backToTopBtn');
+      const scrollRingCircle = document.getElementById('scrollRingCircle');
+      const desktopNav = document.getElementById('desktopNav');
+      const navPillIndicator = document.getElementById('navPillIndicator');
+      const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+      const campaignModal = document.getElementById('campaignModal');
+      const servicePills = document.querySelectorAll('.service-pill');
+      const RING_CIRCUMFERENCE = 2 * Math.PI * 20;
+      let activeNavLink = null;
+      let hoveredNavLink = null;
+
+      window.setMobileMenuState = function(open) {
+        if (!mobileMenuBtn || !mobileDrawer) return;
+        mobileMenuBtn.classList.toggle('is-open', open);
+        mobileDrawer.classList.toggle('is-open', open);
+        mobileMenuBtn.setAttribute('aria-expanded', String(open));
+        document.body.style.overflow = open ? 'hidden' : '';
+      };
+
+      if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+          window.setMobileMenuState(!mobileDrawer.classList.contains('is-open'));
+        });
+      }
+      document.querySelectorAll('.mobile-nav-link').forEach(link => {
+        link.addEventListener('click', () => window.setMobileMenuState(false));
+      });
+
+      function positionNavPill(targetLink) {
+        if (!targetLink || !desktopNav || !navPillIndicator) {
+          if (navPillIndicator) navPillIndicator.style.opacity = '0';
+          return;
+        }
+        const navRect = desktopNav.getBoundingClientRect();
+        const linkRect = targetLink.getBoundingClientRect();
+        navPillIndicator.style.width = `${linkRect.width}px`;
+        navPillIndicator.style.transform = `translateX(${linkRect.left - navRect.left}px)`;
+        navPillIndicator.style.opacity = '1';
+      }
+
+      navLinks.forEach(link => {
+        link.addEventListener('mouseenter', () => { hoveredNavLink = link; positionNavPill(link); });
+      });
+      if (desktopNav) {
+        desktopNav.addEventListener('mouseleave', () => { hoveredNavLink = null; positionNavPill(activeNavLink); });
+      }
+
+      document.querySelectorAll('.magnetic-el').forEach(el => {
+        el.addEventListener('mousemove', e => {
+          if (window.innerWidth < 768) return;
+          const rect = el.getBoundingClientRect();
+          el.style.transform = `translate(${(e.clientX - rect.left - rect.width / 2) * 0.18}px, ${(e.clientY - rect.top - rect.height / 2) * 0.22}px)`;
+        });
+        el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0px, 0px)'; });
+      });
+
+      const trackedSections = ['services', 'approach', 'work', 'contact'].map(id => document.getElementById(id)).filter(Boolean);
+
+      function updateNavigationTelemetry() {
+        const scrollY = window.scrollY || window.pageYOffset;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docHeight > 0 ? Math.min(Math.max(scrollY / docHeight, 0), 1) : 0;
+
+        if (scrollProgressBar) scrollProgressBar.style.transform = `scaleX(${progress})`;
+        if (navbar) navbar.classList.toggle('is-scrolled', scrollY > 36);
+        if (backToTopBtn && scrollRingCircle) {
+          backToTopBtn.classList.toggle('visible', scrollY > 380);
+          scrollRingCircle.style.strokeDashoffset = (RING_CIRCUMFERENCE * (1 - progress)).toFixed(2);
+        }
+
+        const spyOffset = navbar ? navbar.offsetHeight + 120 : 180;
+        let currentSectionId = null;
+        for (const section of trackedSections) {
+          if (scrollY >= section.offsetTop - spyOffset && scrollY < section.offsetTop - spyOffset + section.offsetHeight) {
+            currentSectionId = section.id;
+            break;
+          }
+        }
+        if (docHeight - scrollY < 80) currentSectionId = 'contact';
+
+        const nextActive = currentSectionId ? navLinks.find(l => l.dataset.navTarget === currentSectionId) || null : null;
+        if (nextActive !== activeNavLink) {
+          if (activeNavLink) activeNavLink.classList.remove('text-offwhite');
+          activeNavLink = nextActive;
+          if (activeNavLink) activeNavLink.classList.add('text-offwhite');
+          if (!hoveredNavLink) positionNavPill(activeNavLink);
+        }
+      }
+
+      window.addEventListener('scroll', updateNavigationTelemetry, { passive: true });
+      window.addEventListener('resize', () => { positionNavPill(hoveredNavLink || activeNavLink); updateNavigationTelemetry(); });
+      updateNavigationTelemetry();
+
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', e => {
+          const href = anchor.getAttribute('href');
+          if (!href || href === '#') return;
+          const targetEl = document.querySelector(href);
+          if (!targetEl) return;
+          e.preventDefault();
+          const headerOffset = href === '#top' ? 0 : (navbar ? navbar.offsetHeight + 12 : 84);
+          window.scrollTo({ top: Math.max(0, targetEl.getBoundingClientRect().top + window.scrollY - headerOffset), behavior: 'smooth' });
+        });
+      });
+
+      if (backToTopBtn) backToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+      document.querySelectorAll('.bento-card').forEach(card => {
+        card.addEventListener('mousemove', e => {
+          const rect = card.getBoundingClientRect();
+          card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+          card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+        });
+      });
+
+      const revealObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.reveal-up').forEach(el => revealObserver.observe(el));
+
+      servicePills.forEach(pill => pill.addEventListener('click', () => pill.classList.toggle('active')));
+
+      window.selectServiceAndScroll = function(serviceName) {
+        servicePills.forEach(pill => { if (pill.dataset.service === serviceName) pill.classList.add('active'); });
+        const contactEl = document.getElementById('contact');
+        if (!contactEl) return;
+        const headerOffset = navbar ? navbar.offsetHeight + 12 : 84;
+        window.scrollTo({ top: contactEl.getBoundingClientRect().top + window.scrollY - headerOffset, behavior: 'smooth' });
+      };
+
+      window.copyStudioEmail = function() {
+        const emailEl = document.getElementById('studioEmailText');
+        if (!emailEl) return;
+        const tempInput = document.createElement('input');
+        tempInput.value = emailEl.textContent;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        try {
+          document.execCommand('copy');
+          const label = document.getElementById('copyBtnLabel');
+          if (label) { label.textContent = 'COPIED!'; setTimeout(() => { label.textContent = 'COPY'; }, 2000); }
+        } catch (err) { console.error(err); }
+        document.body.removeChild(tempInput);
+      };
+
+      const inquiryForm = document.getElementById('projectInquiryForm');
+      const inquiryConfirmation = document.getElementById('inquiryConfirmation');
+      if (inquiryForm && inquiryConfirmation) {
+        inquiryForm.addEventListener('submit', e => {
+          e.preventDefault();
+          const clientName = document.getElementById('businessName').value.trim() || 'Partner';
+          const activeServices = Array.from(document.querySelectorAll('.service-pill.active')).map(b => b.dataset.service);
+          document.getElementById('confirmedClientName').textContent = clientName;
+          document.getElementById('confirmedServicesList').textContent = activeServices.length ? activeServices.join(', ') : 'Full-Service Digital Growth';
+          inquiryForm.classList.add('hidden');
+          inquiryConfirmation.classList.remove('hidden');
+        });
+      }
+
+      window.resetInquiryForm = function() {
+        if (!inquiryForm || !inquiryConfirmation) return;
+        inquiryForm.reset();
+        inquiryConfirmation.classList.add('hidden');
+        inquiryForm.classList.remove('hidden');
+      };
+
+      const campaignData = [
+        { tag: 'CONTENT CREATION & REELS', title: 'Lifestyle & Retail Brand Launch', summary: 'We conceptualized, shot, and edited a cohesive visual identity and 12 high-retention Instagram Reels designed to turn local shoppers into loyal brand advocates.', deliverables: ['4K Commercial Brand Film & Product Photography', '12 Hook-Engineered Vertical Reels with Custom Sound Design', 'Cohesive Grid Aesthetic & Launch Rollout Calendar'], metric: '+420% Organic Reach & 3x Profile Visits', serviceTarget: 'Content Creation' },
+        { tag: 'PAID ADS & CAMPAIGN MANAGEMENT', title: 'High-Converting Meta Ad Engine', summary: 'End-to-end Instagram and Facebook advertising funnel combining scroll-stopping video ad creatives with precision local and interest-based audience targeting.', deliverables: ['3 High-Impact Commercial Ad Variations (A/B Tested)', 'Full Meta Ads Manager Setup, Retargeting & Pixel Tracking', 'Daily Budget Optimization & Lead Conversion Reporting'], metric: '3.8x Return on Ad Spend (ROAS)', serviceTarget: 'Paid Ads & Campaign Management' },
+        { tag: 'CREATOR MANAGEMENT & PROMOTION', title: 'Creator Network Brand Surge', summary: 'We sourced, negotiated with, and directed 18 regional content creators to deliver authentic, high-trust storytelling across Instagram and YouTube Shorts.', deliverables: ['Creator Scouting, Vetting & Contract Management', 'Creative Briefs & Brand-Aligned Talking Points', 'Cross-Channel Amplification & Engagement Tracking'], metric: '18+ Creators • 650K+ Verified Local Views', serviceTarget: 'Creator Management' }
+      ];
+
+      window.openCampaignModal = function(index) {
+        const data = campaignData[index];
+        if (!data || !campaignModal) return;
+        document.getElementById('modalTag').textContent = data.tag;
+        document.getElementById('modalTitle').textContent = data.title;
+        document.getElementById('modalSummary').textContent = data.summary;
+        document.getElementById('modalMetric').textContent = data.metric;
+        document.getElementById('modalDeliverables').innerHTML = data.deliverables.map(item => `<li class="flex items-start gap-2.5"><span class="text-amberAccent mt-0.5">✦</span><span>${item}</span></li>`).join('');
+        document.getElementById('modalActionBtn').onclick = () => { window.closeCampaignModal(); window.selectServiceAndScroll(data.serviceTarget); };
+        campaignModal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      };
+
+      window.closeCampaignModal = function() {
+        if (!campaignModal) return;
+        campaignModal.classList.remove('open');
+        document.body.style.overflow = '';
+      };
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+          if (campaignModal && campaignModal.classList.contains('open')) window.closeCampaignModal();
+          if (mobileDrawer && mobileDrawer.classList.contains('is-open')) window.setMobileMenuState(false);
+        }
+      });
+
+      (function initCameraCursor() {
+        const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        const dot = document.getElementById('camCursorDot');
+        const frame = document.getElementById('camCursorFrame');
+        const labelEl = document.getElementById('camCursorLabel');
+        if (!dot || !frame) return;
+
+        if (!isFinePointer) {
+          let touchFadeTimer = null;
+          function triggerTouchAutofocus(touch, isTap) {
+            const x = touch.clientX, y = touch.clientY;
+            const target = document.elementFromPoint(x, y);
+            const cardTarget = target && target.closest('.bento-card[onclick], #work .bento-card');
+            const interactiveTarget = target && target.closest('a, button, [role="button"], .service-pill');
+            clearTimeout(touchFadeTimer);
+            dot.style.opacity = '1';
+            dot.style.background = isTap ? '#FF5E3A' : '#F59E0B';
+            dot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+            frame.classList.remove('touch-focus', 'has-label', 'is-hovering');
+            frame.style.setProperty('--tx', `${x}px`);
+            frame.style.setProperty('--ty', `${y}px`);
+            frame.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+            if (cardTarget) { labelEl.textContent = cardTarget.closest('#work') ? 'CASE' : 'PREVIEW'; frame.classList.add('has-label'); }
+            else if (interactiveTarget) { labelEl.textContent = 'FOCUS'; frame.classList.add('has-label'); }
+            void frame.offsetWidth;
+            frame.style.opacity = '1';
+            frame.classList.add('touch-focus');
+            touchFadeTimer = setTimeout(() => { dot.style.opacity = '0'; frame.style.opacity = '0'; frame.classList.remove('touch-focus', 'has-label'); }, 650);
+          }
+          window.addEventListener('touchstart', e => { if (e.touches && e.touches[0]) triggerTouchAutofocus(e.touches[0], true); }, { passive: true });
+          window.addEventListener('touchmove', e => {
+            if (e.touches && e.touches[0]) {
+              const x = e.touches[0].clientX, y = e.touches[0].clientY;
+              clearTimeout(touchFadeTimer);
+              frame.classList.remove('touch-focus');
+              dot.style.opacity = '1'; dot.style.background = '#F59E0B'; dot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+              frame.style.opacity = '0.9'; frame.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+            }
+          }, { passive: true });
+          window.addEventListener('touchend', () => { clearTimeout(touchFadeTimer); touchFadeTimer = setTimeout(() => { dot.style.opacity = '0'; frame.style.opacity = '0'; frame.classList.remove('touch-focus', 'has-label'); }, 320); }, { passive: true });
+          return;
+        }
+
+        document.body.classList.add('has-custom-cursor');
+        let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2, frameX = mouseX, frameY = mouseY, isVisible = false;
+        window.addEventListener('mousemove', e => {
+          mouseX = e.clientX; mouseY = e.clientY;
+          if (!isVisible) { isVisible = true; dot.style.opacity = '1'; frame.style.opacity = '1'; frameX = mouseX; frameY = mouseY; }
+          dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
+          const target = e.target;
+          const cardTarget = target.closest('.bento-card[onclick], #work .bento-card');
+          const interactiveTarget = target.closest('a, button, [role="button"], .service-pill, .cursor-pointer');
+          const inputTarget = target.closest('input, textarea');
+          if (inputTarget) { frame.style.opacity = '0.25'; frame.classList.remove('is-hovering', 'has-label'); }
+          else {
+            frame.style.opacity = '1';
+            if (cardTarget) { labelEl.textContent = cardTarget.closest('#work') ? 'CASE' : 'PREVIEW'; frame.classList.add('has-label'); frame.classList.remove('is-hovering'); }
+            else if (interactiveTarget) { frame.classList.remove('has-label'); frame.classList.add('is-hovering'); }
+            else { frame.classList.remove('is-hovering', 'has-label'); }
+          }
+        }, { passive: true });
+        (function animateCursorFrame() {
+          frameX += (mouseX - frameX) * 0.2; frameY += (mouseY - frameY) * 0.2;
+          frame.style.transform = `translate3d(${frameX.toFixed(2)}px, ${frameY.toFixed(2)}px, 0)`;
+          requestAnimationFrame(animateCursorFrame);
+        })();
+        window.addEventListener('mousedown', () => { frame.classList.add('is-clicking'); dot.style.background = '#FF5E3A'; });
+        window.addEventListener('mouseup', () => { frame.classList.remove('is-clicking'); dot.style.background = '#F59E0B'; });
+        document.addEventListener('mouseleave', () => { isVisible = false; dot.style.opacity = '0'; frame.style.opacity = '0'; });
+      })();
+    }
+  </script>
+</body>
+</html>

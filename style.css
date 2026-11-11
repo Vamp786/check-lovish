@@ -1,0 +1,429 @@
+/* =========================================================================
+MUKTSAR VISUAL — EDITORIAL STUDIO STYLESHEET
+========================================================================= */
+
+:root {
+--bg-obsidian: #08080A;
+--bg-surface: #111115;
+--border-hairline: rgba(255, 255, 255, 0.08);
+--accent-amber: #F59E0B;
+--accent-coral: #FF5E3A;
+}
+
+body {
+background-color: var(--bg-obsidian);
+color: #F5F5F7;
+font-family: 'Inter', sans-serif;
+overflow-x: hidden;
+-webkit-font-smoothing: antialiased;
+}
+
+::selection {
+background-color: rgba(245, 158, 11, 0.25);
+color: #F5F5F7;
+}
+
+/* Tactile Film Grain Overlay */
+.noise-overlay {
+position: fixed;
+inset: 0;
+pointer-events: none;
+z-index: 50;
+opacity: 0.025;
+background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Architectural Studio Background Grid */
+.studio-grid {
+background-size: 64px 64px;
+background-image:
+linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Brand Gradient Typography */
+.text-gradient-brand {
+background: linear-gradient(135deg, #F59E0B 0%, #FF5E3A 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+/* Bento Cards with Interactive Radial Cursor Spotlight */
+.bento-card {
+position: relative;
+background: #111115;
+border: 1px solid rgba(255, 255, 255, 0.08);
+transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, background-color 0.35s ease;
+overflow: hidden;
+}
+
+.bento-card::before {
+content: "";
+position: absolute;
+inset: 0;
+background: radial-gradient(
+600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+rgba(245, 158, 11, 0.09),
+transparent 45%
+);
+opacity: 0;
+transition: opacity 0.4s ease;
+pointer-events: none;
+}
+
+.bento-card:hover {
+border-color: rgba(245, 158, 11, 0.32);
+transform: translateY(-3px);
+}
+
+.bento-card:hover::before {
+opacity: 1;
+}
+
+/* Infinite Kinetic Capabilities Marquee */
+@keyframes marqueeScroll {
+0% { transform: translateX(0%); }
+100% { transform: translateX(-50%); }
+}
+
+.marquee-track {
+display: flex;
+width: max-content;
+animation: marqueeScroll 32s linear infinite;
+}
+
+.marquee-wrapper:hover .marquee-track {
+animation-play-state: paused;
+}
+
+/* Scroll-Triggered Reveal Motion */
+.reveal-up {
+opacity: 0;
+transform: translateY(28px);
+transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-up.is-visible {
+opacity: 1;
+transform: translateY(0);
+}
+
+/* Live Studio Status Dot Pulse */
+@keyframes pulseRing {
+0% { transform: scale(0.85); opacity: 0.8; }
+70% { transform: scale(1.8); opacity: 0; }
+100% { transform: scale(1.8); opacity: 0; }
+}
+
+.live-dot::after {
+content: '';
+position: absolute;
+inset: 0;
+border-radius: 9999px;
+background-color: #F59E0B;
+animation: pulseRing 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+/* Inquiry Form Service Pills */
+.service-pill.active {
+background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(255, 94, 58, 0.18));
+border-color: #F59E0B;
+color: #F5F5F7;
+}
+
+/* Campaign Modal Transitions */
+.modal-backdrop {
+opacity: 0;
+pointer-events: none;
+transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.open {
+opacity: 1;
+pointer-events: auto;
+}
+
+.modal-panel {
+transform: scale(0.96) translateY(12px);
+transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-backdrop.open .modal-panel {
+transform: scale(1) translateY(0);
+}
+
+/* Top Scroll Progress Bar */
+#scrollProgressBar {
+transform-origin: 0% 50%;
+transform: scaleX(0);
+background: linear-gradient(90deg, #F59E0B 0%, #FF5E3A 65%, #F59E0B 100%);
+box-shadow: 0 0 12px rgba(245, 158, 11, 0.55);
+will-change: transform;
+}
+
+/* Dynamic Shrinking Frosted Navbar */
+#navbar {
+transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+border-color 0.4s ease,
+box-shadow 0.4s ease,
+backdrop-filter 0.4s ease;
+}
+
+#navbar.is-scrolled {
+background-color: rgba(8, 8, 10, 0.88);
+border-bottom-color: rgba(245, 158, 11, 0.22);
+box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.75);
+backdrop-filter: blur(22px);
+}
+
+#navbarInner {
+height: 5.5rem;
+transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#navbar.is-scrolled #navbarInner {
+height: 4.25rem;
+}
+
+/* Gliding Nav Pill & Magnetic Elements */
+#navPillIndicator {
+position: absolute;
+top: 4px;
+bottom: 4px;
+left: 0;
+border-radius: 9999px;
+background: linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(255, 94, 58, 0.14));
+border: 1px solid rgba(245, 158, 11, 0.35);
+box-shadow: 0 0 20px rgba(245, 158, 11, 0.12);
+transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+width 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+opacity 0.25s ease;
+pointer-events: none;
+opacity: 0;
+}
+
+.magnetic-el {
+display: inline-flex;
+transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+will-change: transform;
+}
+
+/* Morphing Hamburger & Full-Screen Mobile Drawer */
+.hamburger-line {
+transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+transform-origin: center;
+}
+
+#mobileMenuBtn.is-open .line-top {
+transform: translateY(5px) rotate(45deg);
+}
+
+#mobileMenuBtn.is-open .line-mid {
+opacity: 0;
+transform: scaleX(0);
+}
+
+#mobileMenuBtn.is-open .line-bot {
+transform: translateY(-5px) rotate(-45deg);
+}
+
+#mobileDrawer {
+opacity: 0;
+visibility: hidden;
+clip-path: inset(0 0 100% 0);
+transition: clip-path 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+opacity 0.4s ease,
+visibility 0.55s;
+}
+
+#mobileDrawer.is-open {
+opacity: 1;
+visibility: visible;
+clip-path: inset(0 0 0% 0);
+}
+
+.drawer-item {
+opacity: 0;
+transform: translateY(22px);
+transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#mobileDrawer.is-open .drawer-item {
+opacity: 1;
+transform: translateY(0);
+}
+
+/* Floating Back-to-Top Scroll Ring */
+#backToTopBtn {
+opacity: 0;
+transform: translateY(18px) scale(0.9);
+pointer-events: none;
+transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+#backToTopBtn.visible {
+opacity: 1;
+transform: translateY(0) scale(1);
+pointer-events: auto;
+}
+
+#backToTopBtn:hover {
+box-shadow: 0 0 24px rgba(245, 158, 11, 0.35);
+transform: translateY(-3px) scale(1.04);
+}
+
+/* =========================================================================
+CAMERA VIEWFINDER CUSTOM CURSOR & MOBILE TOUCH AUTOFOCUS RETICLE
+========================================================================= */
+@media (hover: hover) and (pointer: fine) {
+body.has-custom-cursor,
+body.has-custom-cursor a,
+body.has-custom-cursor button,
+body.has-custom-cursor [role="button"],
+body.has-custom-cursor .cursor-pointer {
+cursor: none !important;
+}
+
+body.has-custom-cursor input,
+body.has-custom-cursor textarea {
+cursor: text !important;
+}
+}
+
+#camCursorDot,
+#camCursorFrame {
+position: fixed;
+top: 0;
+left: 0;
+pointer-events: none;
+z-index: 9999;
+opacity: 0;
+will-change: transform, opacity;
+transition: opacity 0.25s ease;
+}
+
+#camCursorDot {
+width: 6px;
+height: 6px;
+margin-left: -3px;
+margin-top: -3px;
+border-radius: 9999px;
+background: #F59E0B;
+box-shadow: 0 0 10px rgba(245, 158, 11, 0.9);
+}
+
+#camCursorFrame {
+width: 38px;
+height: 38px;
+margin-left: -19px;
+margin-top: -19px;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+margin 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+opacity 0.25s ease;
+}
+
+.vf-bracket {
+position: absolute;
+width: 9px;
+height: 9px;
+border-color: rgba(245, 245, 247, 0.78);
+border-style: solid;
+transition: border-color 0.25s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vf-tl { top: 0; left: 0; border-width: 1.5px 0 0 1.5px; }
+.vf-tr { top: 0; right: 0; border-width: 1.5px 1.5px 0 0; }
+.vf-bl { bottom: 0; left: 0; border-width: 0 0 1.5px 1.5px; }
+.vf-br { bottom: 0; right: 0; border-width: 0 1.5px 1.5px 0; }
+
+#camCursorFrame.is-hovering {
+width: 56px;
+height: 56px;
+margin-left: -28px;
+margin-top: -28px;
+background: radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, transparent 72%);
+border-radius: 12px;
+}
+
+#camCursorFrame.is-hovering .vf-bracket {
+border-color: #F59E0B;
+}
+
+#camCursorFrame.has-label {
+width: 78px;
+height: 34px;
+margin-left: -39px;
+margin-top: -17px;
+background: rgba(17, 17, 21, 0.85);
+backdrop-filter: blur(8px);
+border-radius: 8px;
+}
+
+#camCursorFrame.has-label .vf-bracket {
+border-color: #FF5E3A;
+width: 7px;
+height: 7px;
+}
+
+#camCursorLabel {
+font-family: 'JetBrains Mono', monospace;
+font-size: 9.5px;
+font-weight: 600;
+letter-spacing: 0.14em;
+color: #F5F5F7;
+text-transform: uppercase;
+opacity: 0;
+transform: scale(0.85);
+transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#camCursorFrame.has-label #camCursorLabel {
+opacity: 1;
+transform: scale(1);
+}
+
+#camCursorFrame.is-clicking {
+transform: scale(0.82) !important;
+}
+
+#camCursorFrame.is-clicking .vf-bracket {
+border-color: #FF5E3A;
+}
+
+@keyframes touchAutofocus {
+0% {
+opacity: 1;
+transform: translate3d(var(--tx), var(--ty), 0) scale(1.38);
+}
+45% {
+opacity: 1;
+transform: translate3d(var(--tx), var(--ty), 0) scale(0.96);
+}
+75% {
+opacity: 0.95;
+transform: translate3d(var(--tx), var(--ty), 0) scale(1);
+}
+100% {
+opacity: 0;
+transform: translate3d(var(--tx), var(--ty), 0) scale(0.92);
+}
+}
+
+#camCursorFrame.touch-focus {
+width: 52px;
+height: 52px;
+margin-left: -26px;
+margin-top: -26px;
+animation: touchAutofocus 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+#camCursorFrame.touch-focus .vf-bracket {
+border-color: #F59E0B;
+width: 11px;
+height: 11px;
+}
