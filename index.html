@@ -1,349 +1,591 @@
-<!-- ... existing code ... -->
-  <!-- Custom Studio Stylesheet -->
-  <link rel="stylesheet" href="css/style.css" />
-  <style>
-    :root { --bg-obsidian: #08080A; --bg-surface: #111115; }
-    body { background-color: var(--bg-obsidian); color: #F5F5F7; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-    .noise-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 50; opacity: 0.025; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"); }
-    .studio-grid { background-size: 64px 64px; background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px); }
-    .text-gradient-brand { background: linear-gradient(135deg, #F59E0B 0%, #FF5E3A 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .bento-card { position: relative; background: #111115; border: 1px solid rgba(255,255,255,0.08); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease; overflow: hidden; }
-    .bento-card::before { content: ""; position: absolute; inset: 0; background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(245,158,11,0.09), transparent 45%); opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
-    .bento-card:hover { border-color: rgba(245,158,11,0.32); transform: translateY(-3px); }
-    .bento-card:hover::before { opacity: 1; }
-    @keyframes marqueeScroll { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
-    .marquee-track { display: flex; width: max-content; animation: marqueeScroll 32s linear infinite; }
-    .marquee-wrapper:hover .marquee-track { animation-play-state: paused; }
-    .reveal-up { opacity: 0; transform: translateY(28px); transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-    .reveal-up.is-visible { opacity: 1; transform: translateY(0); }
-    @keyframes pulseRing { 0% { transform: scale(0.85); opacity: 0.8; } 70% { transform: scale(1.8); opacity: 0; } 100% { transform: scale(1.8); opacity: 0; } }
-    .live-dot::after { content: ''; position: absolute; inset: 0; border-radius: 9999px; background-color: #F59E0B; animation: pulseRing 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite; }
-    .service-pill.active { background: linear-gradient(135deg, rgba(245,158,11,0.18), rgba(255,94,58,0.18)); border-color: #F59E0B; color: #F5F5F7; }
-    .modal-backdrop { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-    .modal-backdrop.open { opacity: 1; pointer-events: auto; }
-    .modal-panel { transform: scale(0.96) translateY(12px); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
-    .modal-backdrop.open .modal-panel { transform: scale(1) translateY(0); }
-    #scrollProgressBar { transform-origin: 0% 50%; transform: scaleX(0); background: linear-gradient(90deg, #F59E0B 0%, #FF5E3A 65%, #F59E0B 100%); box-shadow: 0 0 12px rgba(245,158,11,0.55); }
-    #navbar { transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease; }
-    #navbar.is-scrolled { background-color: rgba(8,8,10,0.88); border-bottom-color: rgba(245,158,11,0.22); box-shadow: 0 16px 40px -12px rgba(0,0,0,0.75); }
-    #navbarInner { height: 5.5rem; transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-    #navbar.is-scrolled #navbarInner { height: 4.25rem; }
-    #navPillIndicator { position: absolute; top: 4px; bottom: 4px; left: 0; border-radius: 9999px; background: linear-gradient(135deg, rgba(245,158,11,0.16), rgba(255,94,58,0.14)); border: 1px solid rgba(245,158,11,0.35); transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), width 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease; pointer-events: none; opacity: 0; }
-    .magnetic-el { display: inline-flex; transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
-    .hamburger-line { transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease; transform-origin: center; }
-    #mobileMenuBtn.is-open .line-top { transform: translateY(5px) rotate(45deg); }
-    #mobileMenuBtn.is-open .line-mid { opacity: 0; transform: scaleX(0); }
-    #mobileMenuBtn.is-open .line-bot { transform: translateY(-5px) rotate(-45deg); }
-    #mobileDrawer { opacity: 0; visibility: hidden; clip-path: inset(0 0 100% 0); transition: clip-path 0.55s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease, visibility 0.55s; }
-    #mobileDrawer.is-open { opacity: 1; visibility: visible; clip-path: inset(0 0 0% 0); }
-    .drawer-item { opacity: 0; transform: translateY(22px); transition: opacity 0.45s ease, transform 0.45s ease; }
-    #mobileDrawer.is-open .drawer-item { opacity: 1; transform: translateY(0); }
-    #backToTopBtn { opacity: 0; transform: translateY(18px) scale(0.9); pointer-events: none; transition: opacity 0.35s ease, transform 0.35s ease; }
-    #backToTopBtn.visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
-    @media (hover: hover) and (pointer: fine) { body.has-custom-cursor, body.has-custom-cursor a, body.has-custom-cursor button, body.has-custom-cursor [role="button"], body.has-custom-cursor .cursor-pointer { cursor: none !important; } body.has-custom-cursor input, body.has-custom-cursor textarea { cursor: text !important; } }
-    #camCursorDot, #camCursorFrame { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; opacity: 0; will-change: transform, opacity; transition: opacity 0.25s ease; }
-    #camCursorDot { width: 6px; height: 6px; margin-left: -3px; margin-top: -3px; border-radius: 9999px; background: #F59E0B; box-shadow: 0 0 10px rgba(245,158,11,0.9); }
-    #camCursorFrame { width: 38px; height: 38px; margin-left: -19px; margin-top: -19px; display: flex; align-items: center; justify-content: center; transition: width 0.28s ease, height 0.28s ease, margin 0.28s ease, opacity 0.25s ease; }
-    .vf-bracket { position: absolute; width: 9px; height: 9px; border-color: rgba(245,245,247,0.78); border-style: solid; transition: border-color 0.25s ease; }
-    .vf-tl { top: 0; left: 0; border-width: 1.5px 0 0 1.5px; } .vf-tr { top: 0; right: 0; border-width: 1.5px 1.5px 0 0; } .vf-bl { bottom: 0; left: 0; border-width: 0 0 1.5px 1.5px; } .vf-br { bottom: 0; right: 0; border-width: 0 1.5px 1.5px 0; }
-    #camCursorFrame.is-hovering { width: 56px; height: 56px; margin-left: -28px; margin-top: -28px; background: radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 72%); border-radius: 12px; }
-    #camCursorFrame.is-hovering .vf-bracket { border-color: #F59E0B; }
-    #camCursorFrame.has-label { width: 78px; height: 34px; margin-left: -39px; margin-top: -17px; background: rgba(17,17,21,0.85); backdrop-filter: blur(8px); border-radius: 8px; }
-    #camCursorFrame.has-label .vf-bracket { border-color: #FF5E3A; width: 7px; height: 7px; }
-    #camCursorLabel { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 600; letter-spacing: 0.14em; color: #F5F5F7; text-transform: uppercase; opacity: 0; transform: scale(0.85); transition: opacity 0.2s ease, transform 0.2s ease; }
-    #camCursorFrame.has-label #camCursorLabel { opacity: 1; transform: scale(1); }
-    #camCursorFrame.is-clicking { transform: scale(0.82) !important; }
-    #camCursorFrame.is-clicking .vf-bracket { border-color: #FF5E3A; }
-    @keyframes touchAutofocus { 0% { opacity: 1; transform: translate3d(var(--tx), var(--ty), 0) scale(1.38); } 45% { opacity: 1; transform: translate3d(var(--tx), var(--ty), 0) scale(0.96); } 75% { opacity: 0.95; transform: translate3d(var(--tx), var(--ty), 0) scale(1); } 100% { opacity: 0; transform: translate3d(var(--tx), var(--ty), 0) scale(0.92); } }
-    #camCursorFrame.touch-focus { width: 52px; height: 52px; margin-left: -26px; margin-top: -26px; animation: touchAutofocus 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    #camCursorFrame.touch-focus .vf-bracket { border-color: #F59E0B; width: 11px; height: 11px; }
-  </style>
-</head>
-<!-- ... existing code ... -->
-  <!-- Interactive Studio JavaScript (External + Standalone Fallback) -->
-  <script src="js/script.js"></script>
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Muktsar Visual | Creative Digital Marketing &amp; Content Production</title>
+  <meta name="description" content="Muktsar Visual is a creative digital marketing and content production agency helping businesses grow their online presence, build identity, and reach more customers." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    if (!window.__mvInitialized) {
-      window.__mvInitialized = true;
-
-      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-      const mobileDrawer = document.getElementById('mobileDrawer');
-      const navbar = document.getElementById('navbar');
-      const scrollProgressBar = document.getElementById('scrollProgressBar');
-      const backToTopBtn = document.getElementById('backToTopBtn');
-      const scrollRingCircle = document.getElementById('scrollRingCircle');
-      const desktopNav = document.getElementById('desktopNav');
-      const navPillIndicator = document.getElementById('navPillIndicator');
-      const navLinks = Array.from(document.querySelectorAll('.nav-link'));
-      const campaignModal = document.getElementById('campaignModal');
-      const servicePills = document.querySelectorAll('.service-pill');
-      const RING_CIRCUMFERENCE = 2 * Math.PI * 20;
-      let activeNavLink = null;
-      let hoveredNavLink = null;
-
-      window.setMobileMenuState = function(open) {
-        if (!mobileMenuBtn || !mobileDrawer) return;
-        mobileMenuBtn.classList.toggle('is-open', open);
-        mobileDrawer.classList.toggle('is-open', open);
-        mobileMenuBtn.setAttribute('aria-expanded', String(open));
-        document.body.style.overflow = open ? 'hidden' : '';
-      };
-
-      if (mobileMenuBtn) {
-        mobileMenuBtn.addEventListener('click', () => {
-          window.setMobileMenuState(!mobileDrawer.classList.contains('is-open'));
-        });
-      }
-      document.querySelectorAll('.mobile-nav-link').forEach(link => {
-        link.addEventListener('click', () => window.setMobileMenuState(false));
-      });
-
-      function positionNavPill(targetLink) {
-        if (!targetLink || !desktopNav || !navPillIndicator) {
-          if (navPillIndicator) navPillIndicator.style.opacity = '0';
-          return;
-        }
-        const navRect = desktopNav.getBoundingClientRect();
-        const linkRect = targetLink.getBoundingClientRect();
-        navPillIndicator.style.width = `${linkRect.width}px`;
-        navPillIndicator.style.transform = `translateX(${linkRect.left - navRect.left}px)`;
-        navPillIndicator.style.opacity = '1';
-      }
-
-      navLinks.forEach(link => {
-        link.addEventListener('mouseenter', () => { hoveredNavLink = link; positionNavPill(link); });
-      });
-      if (desktopNav) {
-        desktopNav.addEventListener('mouseleave', () => { hoveredNavLink = null; positionNavPill(activeNavLink); });
-      }
-
-      document.querySelectorAll('.magnetic-el').forEach(el => {
-        el.addEventListener('mousemove', e => {
-          if (window.innerWidth < 768) return;
-          const rect = el.getBoundingClientRect();
-          el.style.transform = `translate(${(e.clientX - rect.left - rect.width / 2) * 0.18}px, ${(e.clientY - rect.top - rect.height / 2) * 0.22}px)`;
-        });
-        el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0px, 0px)'; });
-      });
-
-      const trackedSections = ['services', 'approach', 'work', 'contact'].map(id => document.getElementById(id)).filter(Boolean);
-
-      function updateNavigationTelemetry() {
-        const scrollY = window.scrollY || window.pageYOffset;
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const progress = docHeight > 0 ? Math.min(Math.max(scrollY / docHeight, 0), 1) : 0;
-
-        if (scrollProgressBar) scrollProgressBar.style.transform = `scaleX(${progress})`;
-        if (navbar) navbar.classList.toggle('is-scrolled', scrollY > 36);
-        if (backToTopBtn && scrollRingCircle) {
-          backToTopBtn.classList.toggle('visible', scrollY > 380);
-          scrollRingCircle.style.strokeDashoffset = (RING_CIRCUMFERENCE * (1 - progress)).toFixed(2);
-        }
-
-        const spyOffset = navbar ? navbar.offsetHeight + 120 : 180;
-        let currentSectionId = null;
-        for (const section of trackedSections) {
-          if (scrollY >= section.offsetTop - spyOffset && scrollY < section.offsetTop - spyOffset + section.offsetHeight) {
-            currentSectionId = section.id;
-            break;
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            obsidian: '#08080A',
+            surface: '#111115',
+            surfaceHover: '#18181E',
+            amberAccent: '#F59E0B',
+            coralAccent: '#FF5E3A',
+            offwhite: '#F5F5F7',
+            muted: '#9CA3AF',
           }
         }
-        if (docHeight - scrollY < 80) currentSectionId = 'contact';
-
-        const nextActive = currentSectionId ? navLinks.find(l => l.dataset.navTarget === currentSectionId) || null : null;
-        if (nextActive !== activeNavLink) {
-          if (activeNavLink) activeNavLink.classList.remove('text-offwhite');
-          activeNavLink = nextActive;
-          if (activeNavLink) activeNavLink.classList.add('text-offwhite');
-          if (!hoveredNavLink) positionNavPill(activeNavLink);
-        }
       }
-
-      window.addEventListener('scroll', updateNavigationTelemetry, { passive: true });
-      window.addEventListener('resize', () => { positionNavPill(hoveredNavLink || activeNavLink); updateNavigationTelemetry(); });
-      updateNavigationTelemetry();
-
-      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', e => {
-          const href = anchor.getAttribute('href');
-          if (!href || href === '#') return;
-          const targetEl = document.querySelector(href);
-          if (!targetEl) return;
-          e.preventDefault();
-          const headerOffset = href === '#top' ? 0 : (navbar ? navbar.offsetHeight + 12 : 84);
-          window.scrollTo({ top: Math.max(0, targetEl.getBoundingClientRect().top + window.scrollY - headerOffset), behavior: 'smooth' });
-        });
-      });
-
-      if (backToTopBtn) backToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-
-      document.querySelectorAll('.bento-card').forEach(card => {
-        card.addEventListener('mousemove', e => {
-          const rect = card.getBoundingClientRect();
-          card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-          card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-        });
-      });
-
-      const revealObserver = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            revealObserver.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.reveal-up').forEach(el => revealObserver.observe(el));
-
-      servicePills.forEach(pill => pill.addEventListener('click', () => pill.classList.toggle('active')));
-
-      window.selectServiceAndScroll = function(serviceName) {
-        servicePills.forEach(pill => { if (pill.dataset.service === serviceName) pill.classList.add('active'); });
-        const contactEl = document.getElementById('contact');
-        if (!contactEl) return;
-        const headerOffset = navbar ? navbar.offsetHeight + 12 : 84;
-        window.scrollTo({ top: contactEl.getBoundingClientRect().top + window.scrollY - headerOffset, behavior: 'smooth' });
-      };
-
-      window.copyStudioEmail = function() {
-        const emailEl = document.getElementById('studioEmailText');
-        if (!emailEl) return;
-        const tempInput = document.createElement('input');
-        tempInput.value = emailEl.textContent;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        try {
-          document.execCommand('copy');
-          const label = document.getElementById('copyBtnLabel');
-          if (label) { label.textContent = 'COPIED!'; setTimeout(() => { label.textContent = 'COPY'; }, 2000); }
-        } catch (err) { console.error(err); }
-        document.body.removeChild(tempInput);
-      };
-
-      const inquiryForm = document.getElementById('projectInquiryForm');
-      const inquiryConfirmation = document.getElementById('inquiryConfirmation');
-      if (inquiryForm && inquiryConfirmation) {
-        inquiryForm.addEventListener('submit', e => {
-          e.preventDefault();
-          const clientName = document.getElementById('businessName').value.trim() || 'Partner';
-          const activeServices = Array.from(document.querySelectorAll('.service-pill.active')).map(b => b.dataset.service);
-          document.getElementById('confirmedClientName').textContent = clientName;
-          document.getElementById('confirmedServicesList').textContent = activeServices.length ? activeServices.join(', ') : 'Full-Service Digital Growth';
-          inquiryForm.classList.add('hidden');
-          inquiryConfirmation.classList.remove('hidden');
-        });
-      }
-
-      window.resetInquiryForm = function() {
-        if (!inquiryForm || !inquiryConfirmation) return;
-        inquiryForm.reset();
-        inquiryConfirmation.classList.add('hidden');
-        inquiryForm.classList.remove('hidden');
-      };
-
-      const campaignData = [
-        { tag: 'CONTENT CREATION & REELS', title: 'Lifestyle & Retail Brand Launch', summary: 'We conceptualized, shot, and edited a cohesive visual identity and 12 high-retention Instagram Reels designed to turn local shoppers into loyal brand advocates.', deliverables: ['4K Commercial Brand Film & Product Photography', '12 Hook-Engineered Vertical Reels with Custom Sound Design', 'Cohesive Grid Aesthetic & Launch Rollout Calendar'], metric: '+420% Organic Reach & 3x Profile Visits', serviceTarget: 'Content Creation' },
-        { tag: 'PAID ADS & CAMPAIGN MANAGEMENT', title: 'High-Converting Meta Ad Engine', summary: 'End-to-end Instagram and Facebook advertising funnel combining scroll-stopping video ad creatives with precision local and interest-based audience targeting.', deliverables: ['3 High-Impact Commercial Ad Variations (A/B Tested)', 'Full Meta Ads Manager Setup, Retargeting & Pixel Tracking', 'Daily Budget Optimization & Lead Conversion Reporting'], metric: '3.8x Return on Ad Spend (ROAS)', serviceTarget: 'Paid Ads & Campaign Management' },
-        { tag: 'CREATOR MANAGEMENT & PROMOTION', title: 'Creator Network Brand Surge', summary: 'We sourced, negotiated with, and directed 18 regional content creators to deliver authentic, high-trust storytelling across Instagram and YouTube Shorts.', deliverables: ['Creator Scouting, Vetting & Contract Management', 'Creative Briefs & Brand-Aligned Talking Points', 'Cross-Channel Amplification & Engagement Tracking'], metric: '18+ Creators • 650K+ Verified Local Views', serviceTarget: 'Creator Management' }
-      ];
-
-      window.openCampaignModal = function(index) {
-        const data = campaignData[index];
-        if (!data || !campaignModal) return;
-        document.getElementById('modalTag').textContent = data.tag;
-        document.getElementById('modalTitle').textContent = data.title;
-        document.getElementById('modalSummary').textContent = data.summary;
-        document.getElementById('modalMetric').textContent = data.metric;
-        document.getElementById('modalDeliverables').innerHTML = data.deliverables.map(item => `<li class="flex items-start gap-2.5"><span class="text-amberAccent mt-0.5">✦</span><span>${item}</span></li>`).join('');
-        document.getElementById('modalActionBtn').onclick = () => { window.closeCampaignModal(); window.selectServiceAndScroll(data.serviceTarget); };
-        campaignModal.classList.add('open');
-        document.body.style.overflow = 'hidden';
-      };
-
-      window.closeCampaignModal = function() {
-        if (!campaignModal) return;
-        campaignModal.classList.remove('open');
-        document.body.style.overflow = '';
-      };
-
-      document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-          if (campaignModal && campaignModal.classList.contains('open')) window.closeCampaignModal();
-          if (mobileDrawer && mobileDrawer.classList.contains('is-open')) window.setMobileMenuState(false);
-        }
-      });
-
-      (function initCameraCursor() {
-        const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-        const dot = document.getElementById('camCursorDot');
-        const frame = document.getElementById('camCursorFrame');
-        const labelEl = document.getElementById('camCursorLabel');
-        if (!dot || !frame) return;
-
-        if (!isFinePointer) {
-          let touchFadeTimer = null;
-          function triggerTouchAutofocus(touch, isTap) {
-            const x = touch.clientX, y = touch.clientY;
-            const target = document.elementFromPoint(x, y);
-            const cardTarget = target && target.closest('.bento-card[onclick], #work .bento-card');
-            const interactiveTarget = target && target.closest('a, button, [role="button"], .service-pill');
-            clearTimeout(touchFadeTimer);
-            dot.style.opacity = '1';
-            dot.style.background = isTap ? '#FF5E3A' : '#F59E0B';
-            dot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-            frame.classList.remove('touch-focus', 'has-label', 'is-hovering');
-            frame.style.setProperty('--tx', `${x}px`);
-            frame.style.setProperty('--ty', `${y}px`);
-            frame.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-            if (cardTarget) { labelEl.textContent = cardTarget.closest('#work') ? 'CASE' : 'PREVIEW'; frame.classList.add('has-label'); }
-            else if (interactiveTarget) { labelEl.textContent = 'FOCUS'; frame.classList.add('has-label'); }
-            void frame.offsetWidth;
-            frame.style.opacity = '1';
-            frame.classList.add('touch-focus');
-            touchFadeTimer = setTimeout(() => { dot.style.opacity = '0'; frame.style.opacity = '0'; frame.classList.remove('touch-focus', 'has-label'); }, 650);
-          }
-          window.addEventListener('touchstart', e => { if (e.touches && e.touches[0]) triggerTouchAutofocus(e.touches[0], true); }, { passive: true });
-          window.addEventListener('touchmove', e => {
-            if (e.touches && e.touches[0]) {
-              const x = e.touches[0].clientX, y = e.touches[0].clientY;
-              clearTimeout(touchFadeTimer);
-              frame.classList.remove('touch-focus');
-              dot.style.opacity = '1'; dot.style.background = '#F59E0B'; dot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-              frame.style.opacity = '0.9'; frame.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-            }
-          }, { passive: true });
-          window.addEventListener('touchend', () => { clearTimeout(touchFadeTimer); touchFadeTimer = setTimeout(() => { dot.style.opacity = '0'; frame.style.opacity = '0'; frame.classList.remove('touch-focus', 'has-label'); }, 320); }, { passive: true });
-          return;
-        }
-
-        document.body.classList.add('has-custom-cursor');
-        let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2, frameX = mouseX, frameY = mouseY, isVisible = false;
-        window.addEventListener('mousemove', e => {
-          mouseX = e.clientX; mouseY = e.clientY;
-          if (!isVisible) { isVisible = true; dot.style.opacity = '1'; frame.style.opacity = '1'; frameX = mouseX; frameY = mouseY; }
-          dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
-          const target = e.target;
-          const cardTarget = target.closest('.bento-card[onclick], #work .bento-card');
-          const interactiveTarget = target.closest('a, button, [role="button"], .service-pill, .cursor-pointer');
-          const inputTarget = target.closest('input, textarea');
-          if (inputTarget) { frame.style.opacity = '0.25'; frame.classList.remove('is-hovering', 'has-label'); }
-          else {
-            frame.style.opacity = '1';
-            if (cardTarget) { labelEl.textContent = cardTarget.closest('#work') ? 'CASE' : 'PREVIEW'; frame.classList.add('has-label'); frame.classList.remove('is-hovering'); }
-            else if (interactiveTarget) { frame.classList.remove('has-label'); frame.classList.add('is-hovering'); }
-            else { frame.classList.remove('is-hovering', 'has-label'); }
-          }
-        }, { passive: true });
-        (function animateCursorFrame() {
-          frameX += (mouseX - frameX) * 0.2; frameY += (mouseY - frameY) * 0.2;
-          frame.style.transform = `translate3d(${frameX.toFixed(2)}px, ${frameY.toFixed(2)}px, 0)`;
-          requestAnimationFrame(animateCursorFrame);
-        })();
-        window.addEventListener('mousedown', () => { frame.classList.add('is-clicking'); dot.style.background = '#FF5E3A'; });
-        window.addEventListener('mouseup', () => { frame.classList.remove('is-clicking'); dot.style.background = '#F59E0B'; });
-        document.addEventListener('mouseleave', () => { isVisible = false; dot.style.opacity = '0'; frame.style.opacity = '0'; });
-      })();
-    }
+    };
   </script>
+
+  <!-- External Studio Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bg-obsidian text-offwhite antialiased selection:bg-amberAccent/30">
+
+  <!-- Film Grain & Studio Grid -->
+  <div class="noise-overlay" aria-hidden="true"></div>
+  <div class="fixed inset-0 studio-grid pointer-events-none z-0" aria-hidden="true"></div>
+
+  <!-- Camera Viewfinder Custom Cursor -->
+  <div id="camCursorDot" aria-hidden="true"></div>
+  <div id="camCursorFrame" aria-hidden="true">
+    <span class="vf-bracket vf-tl"></span>
+    <span class="vf-bracket vf-tr"></span>
+    <span class="vf-bracket vf-bl"></span>
+    <span class="vf-bracket vf-br"></span>
+    <span id="camCursorLabel"></span>
+  </div>
+
+  <!-- Top Scroll Progress Bar -->
+  <div class="fixed top-0 left-0 right-0 h-[2px] z-[60] bg-white/5">
+    <div id="scrollProgressBar" class="h-full w-full"></div>
+  </div>
+
+  <!-- Sticky Navigation Header -->
+  <header id="navbar" class="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-obsidian/70 backdrop-blur-xl">
+    <div id="navbarInner" class="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between">
+      <!-- Brand Identity -->
+      <a href="#top" class="flex items-center gap-3.5 group">
+        <div class="relative w-10 h-10 rounded-xl bg-gradient-to-br from-amberAccent to-coralAccent p-[1px] shadow-lg shadow-amberAccent/20">
+          <div class="w-full h-full bg-obsidian rounded-[11px] flex items-center justify-center">
+            <svg class="w-5 h-5 text-amberAccent transition-transform duration-300 group-hover:rotate-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
+              <circle cx="12" cy="12" r="3" fill="#FF5E3A" stroke="none" />
+            </svg>
+          </div>
+        </div>
+        <div>
+          <span class="font-display font-extrabold tracking-tight text-lg sm:text-xl text-offwhite block leading-none">
+            MUKTSAR <span class="text-gradient-brand">VISUAL</span>
+          </span>
+          <span class="font-mono text-[10px] tracking-[0.22em] text-muted uppercase mt-1 block">
+            Creative &amp; Growth Studio
+          </span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation with Gliding Pill -->
+      <nav id="desktopNav" class="relative hidden md:flex items-center gap-1 bg-white/[0.03] border border-white/[0.07] rounded-full px-1.5 py-1">
+        <div id="navPillIndicator"></div>
+        <a href="#services" data-nav-target="services" class="nav-link relative z-10 px-4 py-1.5 text-xs font-mono tracking-wider uppercase text-muted hover:text-offwhite transition-colors">Services</a>
+        <a href="#approach" data-nav-target="approach" class="nav-link relative z-10 px-4 py-1.5 text-xs font-mono tracking-wider uppercase text-muted hover:text-offwhite transition-colors">Mantra</a>
+        <a href="#work" data-nav-target="work" class="nav-link relative z-10 px-4 py-1.5 text-xs font-mono tracking-wider uppercase text-muted hover:text-offwhite transition-colors">Campaigns</a>
+        <a href="#contact" data-nav-target="contact" class="nav-link relative z-10 px-4 py-1.5 text-xs font-mono tracking-wider uppercase text-muted hover:text-offwhite transition-colors">Contact</a>
+      </nav>
+
+      <!-- CTA & Mobile Toggle -->
+      <div class="flex items-center gap-3">
+        <a href="#contact" class="magnetic-el hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-amberAccent to-coralAccent text-obsidian font-semibold text-xs tracking-wide uppercase shadow-lg shadow-amberAccent/20 hover:opacity-95 transition">
+          <span>Let's Work Together</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+
+        <button id="mobileMenuBtn" aria-label="Toggle Menu" aria-expanded="false" class="md:hidden relative w-10 h-10 rounded-xl border border-white/10 bg-surface flex flex-col items-center justify-center gap-1.5">
+          <span class="hamburger-line line-top w-5 h-[1.5px] bg-offwhite"></span>
+          <span class="hamburger-line line-mid w-5 h-[1.5px] bg-amberAccent"></span>
+          <span class="hamburger-line line-bot w-5 h-[1.5px] bg-offwhite"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Full-Screen Editorial Mobile Drawer -->
+  <div id="mobileDrawer" class="fixed inset-0 z-40 bg-obsidian/95 backdrop-blur-2xl flex flex-col justify-between px-6 pt-28 pb-10 md:hidden">
+    <nav class="flex flex-col gap-5">
+      <a href="#services" class="mobile-nav-link drawer-item flex items-baseline gap-4 text-3xl font-display font-bold text-offwhite hover:text-amberAccent transition" style="transition-delay: 0.05s">
+        <span class="font-mono text-xs text-amberAccent">01</span> Services
+      </a>
+      <a href="#approach" class="mobile-nav-link drawer-item flex items-baseline gap-4 text-3xl font-display font-bold text-offwhite hover:text-amberAccent transition" style="transition-delay: 0.1s">
+        <span class="font-mono text-xs text-amberAccent">02</span> Our Mantra
+      </a>
+      <a href="#work" class="mobile-nav-link drawer-item flex items-baseline gap-4 text-3xl font-display font-bold text-offwhite hover:text-amberAccent transition" style="transition-delay: 0.15s">
+        <span class="font-mono text-xs text-amberAccent">03</span> Campaigns
+      </a>
+      <a href="#contact" class="mobile-nav-link drawer-item flex items-baseline gap-4 text-3xl font-display font-bold text-offwhite hover:text-amberAccent transition" style="transition-delay: 0.2s">
+        <span class="font-mono text-xs text-amberAccent">04</span> Contact
+      </a>
+    </nav>
+
+    <div class="drawer-item border-t border-white/10 pt-6" style="transition-delay: 0.25s">
+      <p class="font-mono text-xs uppercase tracking-widest text-muted mb-3">Ready to scale your brand?</p>
+      <a href="#contact" class="mobile-nav-link w-full inline-flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-amberAccent to-coralAccent text-obsidian font-bold text-sm uppercase tracking-wider">
+        Start a Project
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main id="top" class="relative z-10">
+
+    <!-- HERO SECTION -->
+    <section class="pt-32 sm:pt-40 pb-20 sm:pb-28 px-5 sm:px-8 max-w-7xl mx-auto">
+      <div class="grid lg:grid-cols-12 gap-12 items-center">
+        <!-- Left Headline Column -->
+        <div class="lg:col-span-7 space-y-7">
+          <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-surface border border-white/10">
+            <span class="relative w-2 h-2 rounded-full bg-amberAccent live-dot"></span>
+            <span class="font-mono text-xs tracking-wider uppercase text-muted">Complete Creative &amp; Digital Marketing Solution</span>
+          </div>
+
+          <h1 class="font-display font-extrabold text-4xl sm:text-6xl lg:text-[64px] leading-[1.04] tracking-tight">
+            YOUR BUSINESS.<br />
+            <span class="text-gradient-brand">OUR CREATIVITY.</span><br />
+            MORE GROWTH.
+          </h1>
+
+          <p class="text-lg sm:text-xl text-offwhite/90 font-medium tracking-wide">
+            We Create. We Promote. We Manage. We Grow.
+          </p>
+
+          <p class="text-muted text-base sm:text-lg max-w-2xl leading-relaxed">
+            <strong class="text-offwhite font-semibold">Muktsar Visual</strong> is a creative digital marketing and content production brand dedicated to building iconic brand identities, producing scroll-stopping visuals, and converting online attention into real customers.
+          </p>
+
+          <div class="flex flex-wrap items-center gap-4 pt-2">
+            <a href="#contact" class="magnetic-el inline-flex items-center gap-2.5 px-7 py-4 rounded-full bg-gradient-to-r from-amberAccent to-coralAccent text-obsidian font-bold text-sm uppercase tracking-wider shadow-xl shadow-amberAccent/20 hover:opacity-95 transition">
+              <span>Let's Work Together!</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </a>
+            <a href="#services" class="inline-flex items-center gap-2 px-6 py-4 rounded-full bg-surface border border-white/10 hover:border-amberAccent/40 text-offwhite font-medium text-sm transition">
+              Explore 5 Core Services
+            </a>
+          </div>
+        </div>
+
+        <!-- Right Interactive Studio Showcase Bento -->
+        <div class="lg:col-span-5">
+          <div class="bento-card rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-white/10 pb-4">
+              <div>
+                <span class="font-mono text-[11px] uppercase tracking-widest text-amberAccent block">STUDIO SHOWREEL</span>
+                <h2 class="font-display font-bold text-xl text-offwhite mt-0.5">Muktsar Visual Engine</h2>
+              </div>
+              <span class="px-2.5 py-1 rounded-md bg-amberAccent/10 border border-amberAccent/30 font-mono text-xs text-amberAccent">
+                REC ● 4K
+              </span>
+            </div>
+
+            <!-- Interactive Campaign Preview Cards -->
+            <div class="space-y-3">
+              <div onclick="openCampaignModal(0)" class="cursor-pointer group p-4 rounded-2xl bg-obsidian/80 border border-white/[0.07] hover:border-amberAccent/40 transition flex items-center justify-between">
+                <div class="flex items-center gap-3.5">
+                  <div class="w-10 h-10 rounded-xl bg-amberAccent/15 text-amberAccent flex items-center justify-center font-mono font-bold text-sm">01</div>
+                  <div>
+                    <p class="font-semibold text-sm text-offwhite group-hover:text-amberAccent transition">Reels &amp; Commercial Production</p>
+                    <p class="text-xs text-muted">+420% Organic Reach Benchmark</p>
+                  </div>
+                </div>
+                <span class="font-mono text-xs text-muted group-hover:text-offwhite">VIEW →</span>
+              </div>
+
+              <div onclick="openCampaignModal(1)" class="cursor-pointer group p-4 rounded-2xl bg-obsidian/80 border border-white/[0.07] hover:border-coralAccent/40 transition flex items-center justify-between">
+                <div class="flex items-center gap-3.5">
+                  <div class="w-10 h-10 rounded-xl bg-coralAccent/15 text-coralAccent flex items-center justify-center font-mono font-bold text-sm">02</div>
+                  <div>
+                    <p class="font-semibold text-sm text-offwhite group-hover:text-coralAccent transition">Meta Paid Ads Funnel</p>
+                    <p class="text-xs text-muted">3.8x Verified Return on Ad Spend</p>
+                  </div>
+                </div>
+                <span class="font-mono text-xs text-muted group-hover:text-offwhite">VIEW →</span>
+              </div>
+
+              <div onclick="openCampaignModal(2)" class="cursor-pointer group p-4 rounded-2xl bg-obsidian/80 border border-white/[0.07] hover:border-amberAccent/40 transition flex items-center justify-between">
+                <div class="flex items-center gap-3.5">
+                  <div class="w-10 h-10 rounded-xl bg-white/10 text-offwhite flex items-center justify-center font-mono font-bold text-sm">03</div>
+                  <div>
+                    <p class="font-semibold text-sm text-offwhite group-hover:text-amberAccent transition">Creator Collaboration Surge</p>
+                    <p class="text-xs text-muted">18+ Creators • 650K+ Local Views</p>
+                  </div>
+                </div>
+                <span class="font-mono text-xs text-muted group-hover:text-offwhite">VIEW →</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3 pt-2 border-t border-white/10 text-center">
+              <div>
+                <p class="font-display font-extrabold text-xl text-offwhite">5-in-1</p>
+                <p class="font-mono text-[10px] uppercase text-muted">Growth Stack</p>
+              </div>
+              <div>
+                <p class="font-display font-extrabold text-xl text-amberAccent">100%</p>
+                <p class="font-mono text-[10px] uppercase text-muted">Brand Focused</p>
+              </div>
+              <div>
+                <p class="font-display font-extrabold text-xl text-coralAccent">24/7</p>
+                <p class="font-mono text-[10px] uppercase text-muted">Ad Telemetry</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KINETIC CAPABILITIES MARQUEE -->
+    <div class="marquee-wrapper border-y border-white/[0.08] bg-surface/70 py-4 overflow-hidden">
+      <div class="marquee-track font-mono text-xs sm:text-sm tracking-[0.2em] uppercase text-muted flex items-center gap-10">
+        <span>CONTENT CREATION</span><span class="text-amberAccent">✦</span>
+        <span>CREATOR MANAGEMENT</span><span class="text-coralAccent">✦</span>
+        <span>ADVERTISEMENT CREATION</span><span class="text-amberAccent">✦</span>
+        <span>PAID ADS &amp; CAMPAIGN MANAGEMENT</span><span class="text-coralAccent">✦</span>
+        <span>BRAND PROMOTION</span><span class="text-amberAccent">✦</span>
+        <span>WE CREATE • WE PROMOTE • WE MANAGE • WE GROW</span><span class="text-coralAccent">✦</span>
+        <!-- Duplicate for seamless loop -->
+        <span>CONTENT CREATION</span><span class="text-amberAccent">✦</span>
+        <span>CREATOR MANAGEMENT</span><span class="text-coralAccent">✦</span>
+        <span>ADVERTISEMENT CREATION</span><span class="text-amberAccent">✦</span>
+        <span>PAID ADS &amp; CAMPAIGN MANAGEMENT</span><span class="text-coralAccent">✦</span>
+        <span>BRAND PROMOTION</span><span class="text-amberAccent">✦</span>
+        <span>WE CREATE • WE PROMOTE • WE MANAGE • WE GROW</span><span class="text-coralAccent">✦</span>
+      </div>
+    </div>
+
+    <!-- 5 CORE SERVICES SECTION -->
+    <section id="services" class="py-24 px-5 sm:px-8 max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6 reveal-up">
+        <div>
+          <span class="font-mono text-xs tracking-[0.22em] uppercase text-amberAccent block mb-2">WHAT WE DO</span>
+          <h2 class="font-display font-extrabold text-3xl sm:text-5xl tracking-tight">
+            Five Pillars of <span class="text-gradient-brand">Brand Growth</span>
+          </h2>
+        </div>
+        <p class="text-muted max-w-md text-sm sm:text-base">
+          Everything your business needs to look remarkable, reach the right audience, and scale online under one creative roof.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Service 1 -->
+        <article class="bento-card rounded-3xl p-7 flex flex-col justify-between reveal-up">
+          <div>
+            <div class="flex items-center justify-between mb-6">
+              <div class="w-12 h-12 rounded-2xl bg-amberAccent/10 border border-amberAccent/25 flex items-center justify-center text-amberAccent">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              </div>
+              <span class="font-mono text-xs text-muted">01 / STUDIO</span>
+            </div>
+            <h3 class="font-display font-bold text-xl text-offwhite mb-3">Content Creation</h3>
+            <p class="text-muted text-sm leading-relaxed">
+              Creating high-quality photos, videos, reels, and promotional content tailored to capture attention and elevate your brand's visual presence.
+            </p>
+          </div>
+          <button onclick="selectServiceAndScroll('Content Creation')" class="mt-7 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-amberAccent hover:text-offwhite transition">
+            <span>Book Production</span> <span>→</span>
+          </button>
+        </article>
+
+        <!-- Service 2 -->
+        <article class="bento-card rounded-3xl p-7 flex flex-col justify-between reveal-up">
+          <div>
+            <div class="flex items-center justify-between mb-6">
+              <div class="w-12 h-12 rounded-2xl bg-coralAccent/10 border border-coralAccent/25 flex items-center justify-center text-coralAccent">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <span class="font-mono text-xs text-muted">02 / TALENT</span>
+            </div>
+            <h3 class="font-display font-bold text-xl text-offwhite mb-3">Creator Management</h3>
+            <p class="text-muted text-sm leading-relaxed">
+              Managing content creators and connecting businesses with the right voices for authentic collaborations, sponsorships, and high-trust promotions.
+            </p>
+          </div>
+          <button onclick="selectServiceAndScroll('Creator Management')" class="mt-7 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-coralAccent hover:text-offwhite transition">
+            <span>Find Creators</span> <span>→</span>
+          </button>
+        </article>
+
+        <!-- Service 3 -->
+        <article class="bento-card rounded-3xl p-7 flex flex-col justify-between reveal-up">
+          <div>
+            <div class="flex items-center justify-between mb-6">
+              <div class="w-12 h-12 rounded-2xl bg-amberAccent/10 border border-amberAccent/25 flex items-center justify-center text-amberAccent">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+              </div>
+              <span class="font-mono text-xs text-muted">03 / CREATIVE ADS</span>
+            </div>
+            <h3 class="font-display font-bold text-xl text-offwhite mb-3">Advertisement Creation</h3>
+            <p class="text-muted text-sm leading-relaxed">
+              Crafting professional, persuasive, and visually engaging advertisements engineered to stop the scroll and communicate your offer clearly.
+            </p>
+          </div>
+          <button onclick="selectServiceAndScroll('Advertisement Creation')" class="mt-7 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-amberAccent hover:text-offwhite transition">
+            <span>Create Ad Campaign</span> <span>→</span>
+          </button>
+        </article>
+
+        <!-- Service 4 -->
+        <article class="bento-card rounded-3xl p-7 flex flex-col justify-between reveal-up lg:col-span-1">
+          <div>
+            <div class="flex items-center justify-between mb-6">
+              <div class="w-12 h-12 rounded-2xl bg-coralAccent/10 border border-coralAccent/25 flex items-center justify-center text-coralAccent">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+              </div>
+              <span class="font-mono text-xs text-muted">04 / PERFORMANCE</span>
+            </div>
+            <h3 class="font-display font-bold text-xl text-offwhite mb-3">Paid Ads &amp; Campaign Management</h3>
+            <p class="text-muted text-sm leading-relaxed">
+              Running and optimizing targeted ad campaigns across Instagram and Facebook to put your brand directly in front of ready-to-buy customers.
+            </p>
+          </div>
+          <button onclick="selectServiceAndScroll('Paid Ads & Campaign Management')" class="mt-7 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-coralAccent hover:text-offwhite transition">
+            <span>Launch Paid Ads</span> <span>→</span>
+          </button>
+        </article>
+
+        <!-- Service 5 -->
+        <article class="bento-card rounded-3xl p-7 flex flex-col justify-between reveal-up md:col-span-2 lg:col-span-2 bg-gradient-to-br from-surface via-surface to-amberAccent/[0.06]">
+          <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+            <div class="max-w-xl">
+              <div class="flex items-center gap-3 mb-5">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amberAccent to-coralAccent flex items-center justify-center text-obsidian">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                </div>
+                <span class="font-mono text-xs text-amberAccent uppercase tracking-widest">05 / FULL-SPECTRUM VISIBILITY</span>
+              </div>
+              <h3 class="font-display font-bold text-2xl text-offwhite mb-3">Brand Promotion</h3>
+              <p class="text-muted text-sm sm:text-base leading-relaxed">
+                Helping businesses systematically increase brand awareness, audience engagement, and market visibility so your name becomes the first choice in your category.
+              </p>
+            </div>
+            <button onclick="selectServiceAndScroll('Brand Promotion')" class="shrink-0 self-start sm:self-end px-6 py-3 rounded-full bg-offwhite text-obsidian font-bold text-xs uppercase tracking-wider hover:bg-amberAccent transition">
+              Elevate Brand →
+            </button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- OUR MANTRA / WORKFLOW SECTION -->
+    <section id="approach" class="py-20 px-5 sm:px-8 border-y border-white/[0.07] bg-surface/40">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center max-w-2xl mx-auto mb-16 reveal-up">
+          <span class="font-mono text-xs tracking-[0.22em] uppercase text-amberAccent">HOW WE WORK</span>
+          <h2 class="font-display font-extrabold text-3xl sm:text-5xl mt-2">
+            We Create. We Promote.<br /><span class="text-gradient-brand">We Manage. We Grow.</span>
+          </h2>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="bento-card rounded-2xl p-6 reveal-up">
+            <span class="font-mono text-xs text-amberAccent">STEP 01</span>
+            <h3 class="font-display font-bold text-xl mt-2 mb-2">We Create</h3>
+            <p class="text-sm text-muted leading-relaxed">High-impact reels, brand photography, and commercial ad creatives tailored to your business identity.</p>
+          </div>
+          <div class="bento-card rounded-2xl p-6 reveal-up">
+            <span class="font-mono text-xs text-coralAccent">STEP 02</span>
+            <h3 class="font-display font-bold text-xl mt-2 mb-2">We Promote</h3>
+            <p class="text-sm text-muted leading-relaxed">Strategic brand promotion and creator collaborations that put your message in front of active audiences.</p>
+          </div>
+          <div class="bento-card rounded-2xl p-6 reveal-up">
+            <span class="font-mono text-xs text-amberAccent">STEP 03</span>
+            <h3 class="font-display font-bold text-xl mt-2 mb-2">We Manage</h3>
+            <p class="text-sm text-muted leading-relaxed">Hands-on management of Meta ad campaigns, creator partnerships, and audience engagement metrics.</p>
+          </div>
+          <div class="bento-card rounded-2xl p-6 reveal-up">
+            <span class="font-mono text-xs text-coralAccent">STEP 04</span>
+            <h3 class="font-display font-bold text-xl mt-2 mb-2">We Grow</h3>
+            <p class="text-sm text-muted leading-relaxed">Consistent, measurable growth in brand recognition, customer inquiries, and online revenue.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURED CAMPAIGNS SECTION -->
+    <section id="work" class="py-24 px-5 sm:px-8 max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6 reveal-up">
+        <div>
+          <span class="font-mono text-xs tracking-[0.22em] uppercase text-coralAccent block mb-2">SELECTED IMPACT</span>
+          <h2 class="font-display font-extrabold text-3xl sm:text-5xl tracking-tight">
+            Campaigns Built to <span class="text-gradient-brand">Convert</span>
+          </h2>
+        </div>
+        <p class="text-muted text-sm max-w-md">
+          Click any campaign blueprint below to inspect our deliverables and growth outcomes.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <div onclick="openCampaignModal(0)" class="bento-card rounded-3xl p-7 cursor-pointer group reveal-up">
+          <span class="inline-block px-3 py-1 rounded-full bg-amberAccent/10 text-amberAccent font-mono text-[11px] uppercase mb-5">Content Creation</span>
+          <h3 class="font-display font-bold text-2xl text-offwhite group-hover:text-amberAccent transition mb-3">Lifestyle &amp; Retail Brand Launch</h3>
+          <p class="text-sm text-muted mb-6">4K brand film and 12 hook-driven Instagram Reels engineered for local dominance.</p>
+          <div class="pt-4 border-t border-white/10 flex items-center justify-between font-mono text-xs">
+            <span class="text-offwhite">+420% Organic Reach</span>
+            <span class="text-amberAccent">Inspect →</span>
+          </div>
+        </div>
+
+        <div onclick="openCampaignModal(1)" class="bento-card rounded-3xl p-7 cursor-pointer group reveal-up">
+          <span class="inline-block px-3 py-1 rounded-full bg-coralAccent/10 text-coralAccent font-mono text-[11px] uppercase mb-5">Paid Ads &amp; Meta</span>
+          <h3 class="font-display font-bold text-2xl text-offwhite group-hover:text-coralAccent transition mb-3">High-Converting Meta Ad Engine</h3>
+          <p class="text-sm text-muted mb-6">Full-funnel Facebook &amp; Instagram ad creatives paired with precision audience targeting.</p>
+          <div class="pt-4 border-t border-white/10 flex items-center justify-between font-mono text-xs">
+            <span class="text-offwhite">3.8x Return on Ad Spend</span>
+            <span class="text-coralAccent">Inspect →</span>
+          </div>
+        </div>
+
+        <div onclick="openCampaignModal(2)" class="bento-card rounded-3xl p-7 cursor-pointer group reveal-up">
+          <span class="inline-block px-3 py-1 rounded-full bg-white/10 text-offwhite font-mono text-[11px] uppercase mb-5">Creator Management</span>
+          <h3 class="font-display font-bold text-2xl text-offwhite group-hover:text-amberAccent transition mb-3">Creator Network Brand Surge</h3>
+          <p class="text-sm text-muted mb-6">18 vetted regional creators delivering authentic storytelling across Reels &amp; Shorts.</p>
+          <div class="pt-4 border-t border-white/10 flex items-center justify-between font-mono text-xs">
+            <span class="text-offwhite">650K+ Verified Views</span>
+            <span class="text-amberAccent">Inspect →</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALL TO ACTION & PROJECT INQUIRY SECTION -->
+    <section id="contact" class="py-24 px-5 sm:px-8 max-w-7xl mx-auto">
+      <div class="bento-card rounded-[2rem] p-8 sm:p-12 lg:p-16 bg-gradient-to-br from-surface via-surface to-coralAccent/[0.07] reveal-up">
+        <div class="grid lg:grid-cols-12 gap-12 items-start">
+          <!-- Left CTA Copy -->
+          <div class="lg:col-span-5 space-y-6">
+            <span class="font-mono text-xs uppercase tracking-[0.22em] text-amberAccent">START YOUR GROWTH</span>
+            <h2 class="font-display font-extrabold text-3xl sm:text-5xl leading-tight">
+              Want to Grow Your Business Online?
+            </h2>
+            <p class="text-xl font-display font-bold text-gradient-brand">
+              Let's Work Together!
+            </p>
+            <p class="text-muted text-sm sm:text-base leading-relaxed">
+              Select the services you need and send us a brief. Our team at <strong class="text-offwhite">Muktsar Visual</strong> will craft a tailored content and marketing roadmap for your brand.
+            </p>
+
+            <div class="p-4 rounded-2xl bg-obsidian/80 border border-white/10 flex items-center justify-between gap-3">
+              <div>
+                <span class="font-mono text-[10px] uppercase tracking-widest text-muted block">DIRECT STUDIO DESK</span>
+                <span id="studioEmailText" class="font-mono text-xs sm:text-sm text-offwhite">hello@muktsarvisual.com</span>
+              </div>
+              <button type="button" onclick="copyStudioEmail()" class="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-amberAccent hover:text-obsidian font-mono text-xs uppercase transition">
+                <span id="copyBtnLabel">COPY</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Interactive Form -->
+          <div class="lg:col-span-7 bg-obsidian/75 border border-white/10 rounded-3xl p-6 sm:p-8">
+            <form id="projectInquiryForm" class="space-y-6">
+              <div>
+                <label class="block font-mono text-xs uppercase tracking-wider text-muted mb-3">1. Select Services Interested In</label>
+                <div class="flex flex-wrap gap-2.5">
+                  <button type="button" data-service="Content Creation" class="service-pill px-3.5 py-2 rounded-full border border-white/15 bg-surface text-xs font-medium text-muted hover:text-offwhite transition">Content Creation</button>
+                  <button type="button" data-service="Creator Management" class="service-pill px-3.5 py-2 rounded-full border border-white/15 bg-surface text-xs font-medium text-muted hover:text-offwhite transition">Creator Management</button>
+                  <button type="button" data-service="Advertisement Creation" class="service-pill px-3.5 py-2 rounded-full border border-white/15 bg-surface text-xs font-medium text-muted hover:text-offwhite transition">Advertisement Creation</button>
+                  <button type="button" data-service="Paid Ads & Campaign Management" class="service-pill px-3.5 py-2 rounded-full border border-white/15 bg-surface text-xs font-medium text-muted hover:text-offwhite transition">Paid Ads &amp; Campaign Management</button>
+                  <button type="button" data-service="Brand Promotion" class="service-pill px-3.5 py-2 rounded-full border border-white/15 bg-surface text-xs font-medium text-muted hover:text-offwhite transition">Brand Promotion</button>
+                </div>
+              </div>
+
+              <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="businessName" class="block font-mono text-xs uppercase tracking-wider text-muted mb-2">Your Name / Brand *</label>
+                  <input id="businessName" type="text" required placeholder="e.g., Urban Threads Studio" class="w-full px-4 py-3 rounded-xl bg-surface border border-white/10 focus:border-amberAccent focus:outline-none text-sm text-offwhite" />
+                </div>
+                <div>
+                  <label for="contactInfo" class="block font-mono text-xs uppercase tracking-wider text-muted mb-2">Phone or Email *</label>
+                  <input id="contactInfo" type="text" required placeholder="+91 98765 43210 / email" class="w-full px-4 py-3 rounded-xl bg-surface border border-white/10 focus:border-amberAccent focus:outline-none text-sm text-offwhite" />
+                </div>
+              </div>
+
+              <div>
+                <label for="projectGoal" class="block font-mono text-xs uppercase tracking-wider text-muted mb-2">Campaign Goals</label>
+                <textarea id="projectGoal" rows="3" placeholder="Tell us about your business, target audience, and growth goals..." class="w-full px-4 py-3 rounded-xl bg-surface border border-white/10 focus:border-amberAccent focus:outline-none text-sm text-offwhite"></textarea>
+              </div>
+
+              <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-amberAccent to-coralAccent text-obsidian font-bold text-sm uppercase tracking-wider shadow-lg shadow-amberAccent/20 hover:opacity-95 transition">
+                Send Growth Brief to Muktsar Visual
+              </button>
+            </form>
+
+            <!-- Instant Submission Confirmation -->
+            <div id="inquiryConfirmation" class="hidden text-center py-8 space-y-4">
+              <div class="w-14 h-14 rounded-2xl bg-amberAccent/15 border border-amberAccent/40 text-amberAccent flex items-center justify-center mx-auto text-2xl">✓</div>
+              <h3 class="font-display font-bold text-2xl text-offwhite">Brief Received, <span id="confirmedClientName" class="text-amberAccent">Partner</span>!</h3>
+              <p class="text-sm text-muted max-w-md mx-auto">
+                Our creative producers are reviewing your request for: <strong id="confirmedServicesList" class="text-offwhite"></strong>. We will reach out shortly!
+              </p>
+              <button type="button" onclick="resetInquiryForm()" class="px-5 py-2.5 rounded-full border border-white/15 text-xs font-mono uppercase tracking-wider text-muted hover:text-offwhite transition">
+                Submit Another Inquiry
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="relative z-10 border-t border-white/[0.08] bg-obsidian/90 py-10 px-5 sm:px-8">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="font-display font-extrabold text-base tracking-tight text-offwhite">
+          MUKTSAR <span class="text-gradient-brand">VISUAL</span>
+        </span>
+        <span class="text-white/20">|</span>
+        <span class="font-mono text-xs text-muted">We Create. We Promote. We Manage. We Grow.</span>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center sm:justify-end gap-3 font-mono text-xs">
+        <span class="text-muted">&copy; 2026 ALL RIGHTS RESERVED BY MUKTSAR VISUAL</span>
+        <span class="px-3 py-1 rounded-full bg-surface border border-amberAccent/30 text-amberAccent tracking-wider uppercase">
+          Built by Lovish
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- CAMPAIGN CASE STUDY MODAL -->
+  <div id="campaignModal" class="modal-backdrop fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onclick="if(event.target===this) closeCampaignModal()">
+    <div class="modal-panel bg-surface border border-white/15 rounded-3xl max-w-lg w-full p-7 sm:p-8 space-y-5 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <span id="modalTag" class="font-mono text-xs uppercase tracking-widest text-amberAccent">CAMPAIGN</span>
+        <button onclick="closeCampaignModal()" aria-label="Close modal" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-muted hover:text-offwhite">✕</button>
+      </div>
+      <h3 id="modalTitle" class="font-display font-extrabold text-2xl text-offwhite">Campaign Title</h3>
+      <p id="modalSummary" class="text-sm text-muted leading-relaxed"></p>
+      <div class="p-4 rounded-2xl bg-obsidian border border-white/10">
+        <span class="font-mono text-[10px] uppercase tracking-widest text-muted block mb-2">KEY DELIVERABLES</span>
+        <ul id="modalDeliverables" class="space-y-2 text-xs sm:text-sm text-offwhite/90"></ul>
+      </div>
+      <div class="flex items-center justify-between pt-2">
+        <span id="modalMetric" class="font-mono text-xs font-semibold text-coralAccent"></span>
+        <button id="modalActionBtn" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-amberAccent to-coralAccent text-obsidian font-bold text-xs uppercase tracking-wider">
+          Request Similar →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING BACK-TO-TOP SCROLL RING -->
+  <button id="backToTopBtn" aria-label="Back to top" class="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-surface/90 backdrop-blur-md border border-white/10 flex items-center justify-center">
+    <svg class="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2.5" />
+      <circle id="scrollRingCircle" cx="24" cy="24" r="20" fill="none" stroke="#F59E0B" stroke-width="2.5" stroke-dasharray="125.66" stroke-dashoffset="125.66" stroke-linecap="round" />
+    </svg>
+    <span class="absolute font-mono text-xs text-offwhite">↑</span>
+  </button>
+
+  <!-- External Interactive JavaScript -->
+  <script src="js/script.js"></script>
 </body>
 </html>
